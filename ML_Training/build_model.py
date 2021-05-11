@@ -8,7 +8,10 @@ from Sampling import Sampling
 # Build model in two forms one in distributed GPU training 
 # Model is a VAE model with some disentanglement 
 # recreate the model with the following model 
-def build_model(latent_dim = 6,dens_lay = 1024, kernel = (3,3),conv1 = 0,conv2 = 0,conv3 = 0,conv4 = 0, lr= 0.0005 ):
+def build_model(latent_dim = 6,dens_lay = 1024, 
+                kernel = (3,3),conv1 = 0,conv2 = 0,
+                conv3 = 0,conv4 = 0, lr= 0.0005, beta=1 ):
+                
     encoder_inputs = keras.Input(shape=(16, 256, 1))
     x = layers.BatchNormalization()(encoder_inputs)
     x = layers.Conv2D(16, kernel, activation="relu", strides=2, padding="same")(x)
@@ -80,7 +83,7 @@ def build_model(latent_dim = 6,dens_lay = 1024, kernel = (3,3),conv1 = 0,conv2 =
     decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
     decoder.summary()
 
-    vae = VAE(encoder, decoder)
+    vae = VAE(encoder, decoder, beta =1)
     vae.compile(optimizer=keras.optimizers.Adam(lr))
     return vae
 

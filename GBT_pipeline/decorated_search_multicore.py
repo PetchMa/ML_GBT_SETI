@@ -1,18 +1,35 @@
 import numpy as np
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 import sys
 sys.path.insert(1, '../ML_Training')
 from execute_model import model_predict_distribute
 from preprocess import get_data
-
 from numba import jit, prange, njit
 from blimpy import Waterfall
 import time
 import random
 from sklearn.cluster import SpectralClustering
 from pandas import DataFrame as pd
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 import tensorflow as tf
+from multiprocessing import Pool
+import functools
+import warnings
+
+
+
+warnings.filterwarnings("ignore") 
+
+def compute_parallel(result, cadence_length,WINDOW_SIZE,index,freq_ranges, n):
+    sub_freq_list = []
+    labels = result[n*cadence_length: (n+1)*cadence_length, : ]
+    labels = SpectralClustering(n_clusters=2, assign_labels="discretize", random_state=0).fit_predict(labels)
+    if True:
+        hit_start = freq_ranges[index][0] + n*WINDOW_SIZE
+        hit_end = hit_start + WINDOW_SIZE
+        sub_freq_list.append([hit_start,hit_end])
+    return sub_freq_list
+
 
 def weak_cadence_pattern(labels):
     return labels[0]!=labels[1] or labels[1]!=labels[2] and labels[2]!= labels[3] or labels[3]!=labels[4] and labels[4]!=labels[5] 
@@ -36,6 +53,8 @@ def sample_creation(inputs):
     return z_mean + tf.exp(0.5 * z_log_var) * epsilon
 
 def classification_data(target_name,cadence, model, out_dir, iterations=6):
+    warnings.filterwarnings("ignore") 
+
     f_hit_start = []
     f_hit_end = []
     header = Waterfall(cadence[0]).header
@@ -51,24 +70,24 @@ def classification_data(target_name,cadence, model, out_dir, iterations=6):
         freq_ranges.append([f_start, f_stop])
     
     #execution looop:
-    for index in range(iterations):
+    for index in range(1):
         data = get_data(cadence,start =freq_ranges[index][0],end =freq_ranges[index][1])
         num_samples = data.shape[0]
         cadence_length = data.shape[1]
+        print("Collapse Data")
         data = combine(data)
+        print("Push Through Neural Net")
+        net = time.time()
         result = model.predict(data)
-        print(result[0].shape)
+        print(time.time()-net)
+        print("Create Sample")
         result =  sample_creation(result).numpy()
-        for n in range(num_samples):
-            labels = result[n*cadence_length: (n+1)*cadence_length, : ]
-            labels = SpectralClustering(n_clusters=2, assign_labels="discretize", random_state=0).fit_predict(labels)
-            if True:
-                hit_start = freq_ranges[index][0] + n*WINDOW_SIZE
-                hit_end = hit_start + WINDOW_SIZE
-                f_hit_start.append(hit_start)
-                f_hit_end.append(hit_end)
+        print("Parallel Spectral Clustering")
+        cluster = time.time()
+        with Pool(39) as p:
+            result = p.map(functools.partial(compute_parallel, result, cadence_length,WINDOW_SIZE,index, freq_ranges), range(num_samples))
+        print(time.time()-cluster)
+        print(len(result))
 
-    candidates = {'f_start':f_hit_start,'f_end':f_hit_start }
-    df = pd.from_dict(candidates)
-    df.to_csv(out_dir+"/"+target_name+".csv")
-    print(len(f_hit_start))
+
+

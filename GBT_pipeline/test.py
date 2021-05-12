@@ -1,10 +1,16 @@
 import numpy as np
 import sys
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+import tensorflow as tf
 sys.path.insert(1, '../ML_Training')
-from decorated_search import classification_data
+# from decorated_search import classification_data
+from decorated_search_multicore import classification_data
 from execute_model import model_load
 import time
 
+import warnings
+warnings.filterwarnings("ignore")
 
 
 cadence_set = ['../../../../../../../mnt_blpd7/datax2/dl/GBT_57636_58929_GJ380_fine.h5',
@@ -17,5 +23,5 @@ cadence_set = ['../../../../../../../mnt_blpd7/datax2/dl/GBT_57636_58929_GJ380_f
 model = model_load("../../VAE-ENCODERv5.h5")
 
 start=  time.time()
-data = classification_data("GJ380", cadence_set, model, "./", iterations=10)
+data = classification_data("GJ380", cadence_set, model, "./", iterations=4)
 print("time: "+str(time.time()-start))

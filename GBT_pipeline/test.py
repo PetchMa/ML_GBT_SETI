@@ -3,6 +3,7 @@ import sys
 sys.path.insert(1, '../ML_Training')
 from decorated_search import classification_data
 from execute_model import model_load
+import time
 
 cadence_set = ['../../../../../../../mnt_blpd7/datax2/dl/GBT_57636_58929_GJ380_fine.h5',
                 "../../../../../../../mnt_blpd7/datax2/dl/GBT_57636_59291_HIP48887_fine.h5",
@@ -13,4 +14,6 @@ cadence_set = ['../../../../../../../mnt_blpd7/datax2/dl/GBT_57636_58929_GJ380_f
                 ]
 model = model_load("../../VAE-ENCODERv5.h5")
 
-data = classification_data(cadence_set, model, "./", iterations=6)
+start=  time.time()
+data = classification_data("GJ380", cadence_set, model, "./", iterations=6)
+print("time: "+str(time.time()-start))

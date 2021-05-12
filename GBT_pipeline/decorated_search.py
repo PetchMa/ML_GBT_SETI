@@ -33,7 +33,7 @@ def sample_creation(inputs):
     epsilon = tf.keras.backend.random_normal(shape=(batch, dim))
     return z_mean + tf.exp(0.5 * z_log_var) * epsilon
 
-def classification_data(cadence, model, out_dir, iterations=6):
+def classification_data(target_name,cadence, model, out_dir, iterations=6):
     f_hit_start = []
     f_hit_end = []
     header = Waterfall(cadence[0]).header
@@ -63,12 +63,12 @@ def classification_data(cadence, model, out_dir, iterations=6):
             print(labels)
             labels = SpectralClustering(n_clusters=2, assign_labels="discretize", random_state=0).fit_predict(labels)
             if strong_cadence_pattern(labels):
-                hit_start = freq_ranges[i][0] + i*WINDOW_SIZE
+                hit_start = freq_ranges[i][0] + n*WINDOW_SIZE
                 hit_end = hit_start + WINDOW_SIZE
                 f_hit_start.append(hit_start)
                 f_hit_end.append(hit_end)
 
     candidates = {'f_start':f_hit_start,'f_end':f_hit_start }
     df = pd.from_dict(candidates)
-    df.to_csv(out_dir+"/candidates.csv")
+    df.to_csv(out_dir+"/"+target_name+".csv")
     print(len(f_hit_start))

@@ -7,7 +7,6 @@ from random import random
 from numba import jit, prange, njit
 import math
 
-
 def new_frame(mean = 58348559, snr_power = 1):
     snr=(random()*10+200)
     drift=(random()*2+1)*(-1)**(int(random()*3+1))
@@ -86,7 +85,7 @@ def create_true(plate,  snr_base=300, snr_range=10, factor=1):
     total[5,:,:] = cadence[80:96,:]
     return total
 
-def create_true_single_shot(plate, snr_base=10, snr_range=5,factor = 1):
+def create_true_single_shot(plate, snr_base=10, snr_range=5, factor = 1):
     index = int(plate.shape[0]*random())
     total = np.zeros((6,plate.shape[1],plate.shape[2] ))
     base = plate[index,:,:]
@@ -129,7 +128,7 @@ def create_false(plate, snr_base=300, snr_range=10, factor = 1):
     return total
 
 
-def create_full_cadence(function,samples, plate, snr_base=300, snr_range=10, factor=1):
+def create_full_cadence(function, samples, plate, snr_base=300, snr_range=10, factor=1):
     data = np.zeros((samples,6,16,256))
     for i in range(data.shape[0]):
         data[i,:,:,:] = function(plate, snr_base=snr_base, snr_range=snr_range, factor=factor) 

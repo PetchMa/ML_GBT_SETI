@@ -20,7 +20,7 @@ cadence_set = ['../../../../../../../mnt_blpd7/datax2/dl/GBT_57636_58929_GJ380_f
                 "../../../../../../../mnt_blpd7/datax2/dl/GBT_57636_60354_GJ380_fine.h5",
                 "../../../../../../../mnt_blpd7/datax2/dl/GBT_57636_60706_HIP48954_fine.h5"
                 ]
-model = model_load("../../VAE-ENCODERv5.h5")
+model = model_load("../../VAE-ENCODERv6.h5")
 
 start=  time.time()
 data = classification_data("GJ380", cadence_set, model, "./", iterations=4)

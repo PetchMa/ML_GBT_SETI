@@ -4,7 +4,9 @@ from numba import jit, prange, njit
 from blimpy import Waterfall
 import time
 import random
+import warnings 
 
+warnings.filterwarnings("ignore")
 # data preprocessing operations 
 # Goal is to take a full cadence and shape it into something usable 
 # for a wide range of ML pipelines
@@ -12,8 +14,9 @@ import random
 # We get the data for a strict shape of freq 256, and time 16 and we stack them together. 
 # returns the stack of all the slices in order and log normalized and scaled between 1 and 0.
 def get_data(cadence, start, end):
+    warnings.filterwarnings("ignore")
     print("Getting Data")
-    Waterfall(cadence[0], load_data=False).info()
+    # Waterfall(cadence[0], load_data=False).info()
 
     A1 = Waterfall(cadence[0], f_start=start, f_stop=end, max_load=10).data
     B = Waterfall(cadence[1], f_start=start, f_stop=end, max_load=10).data
@@ -29,11 +32,10 @@ def get_data(cadence, start, end):
     C =shaping_data(C)
     A3 =shaping_data(A3)
     D =shaping_data(D)
-    D = pre_proc(D)
-    # data = self.combine_cadence(A1,A2,A3,B,C,D)
+    data = combine_cadence(A1,A2,A3,B,C,D)
 
     print("Execution Time: "+str(time.time()-start_pre))
-    return D
+    return data
 
 # shaping the data by stacking them together. 
 @jit(parallel=True)
@@ -45,8 +47,8 @@ def shaping_data( data):
     return new_data
 
 # preprocess the data with the following operations acclerated via numba
-@njit(nopython=True, parallel=True)
-def pre_proc( data):
+@njit(nopython=True)
+def pre_proc(data):
 #   data= data - data.min()+1
     data = np.log(data)
     data = data/data.max()
@@ -55,10 +57,12 @@ def pre_proc( data):
 
 #combing all the data together 
 @jit(parallel=True, nopython=True)
-def combine_cadence( A1,A2,A3,B,C,D):
+def combine_cadence(A1,A2,A3,B,C,D):
     samples = A1.shape[0]
+    print(samples)
     data = np.zeros((samples,6, 16, 256, 1))
     for i in prange(samples):
+        # print(" "+str(i)+" ")
         data[i,0,:,:,:] = A1[i,:,:,:]
         data[i,1,:,:,:] = B[i,:,:,:]
         data[i,2,:,:,:] = A2[i,:,:,:]

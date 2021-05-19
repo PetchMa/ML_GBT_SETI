@@ -16,7 +16,7 @@ def sample_creation(inputs):
     return z_mean + tf.exp(0.5 * z_log_var) * epsilon
 
 def model_load(model_file):
-    strategy = tf.distribute.MirroredStrategy(["GPU:0", "GPU:1","GPU:2"],
+    strategy = tf.distribute.MirroredStrategy(
         cross_device_ops=tf.distribute.ReductionToOneDevice())
     # print("Number of devices: {}".format(strategy.num_replicas_in_sync))
 

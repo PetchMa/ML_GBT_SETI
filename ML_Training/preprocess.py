@@ -5,6 +5,7 @@ from blimpy import Waterfall
 import time
 import random
 import warnings 
+from tqdm  import tqdm
 
 warnings.filterwarnings("ignore")
 # data preprocessing operations 
@@ -51,8 +52,8 @@ def shaping_data( data):
 def pre_proc(data):
 #   data= data - data.min()+1
     data = np.log(data)
-    data = data/data.max()
     data= data - data.min()
+    data = data/data.max()
     return data
 
 #combing all the data together 

@@ -16,17 +16,29 @@ from multiprocessing import Pool
 import functools
 import warnings
 import logging
+from numpy.linalg import norm
+from sklearn.metrics import silhouette_score
+
 tf.get_logger().setLevel('INFO')
 
 def strong_cadence_pattern(labels):
     return labels[0]!=labels[1] and labels[1]!=labels[2] and labels[2]!= labels[3] and labels[3]!=labels[4] and labels[4]!=labels[5] 
 
+def screening(data, labels):
+    fit = silhouette_score(data,labels)
+    if fit > 0.7:
+        return True
+    return False
 
 def compute_parallel(result, flag, n):
     labels = result[n*6: (n+1)*6, : ]
-    labels = SpectralClustering(n_clusters=2, assign_labels="discretize", random_state=0).fit_predict(labels)
-    if strong_cadence_pattern(labels) == flag:
-        return True
+    labels = SpectralClustering(n_clusters=2, assign_labels="discretize", 
+                random_state=0).fit_predict(labels)
+    if strong_cadence_pattern(labels)==True:
+        if screening(result[n*6: (n+1)*6, : ], labels):
+            return True
+        else:
+            return False
     else:
         return False
 
@@ -47,10 +59,10 @@ def sample_creation(inputs):
 
 
 @jit(parallel=True)
-def check(data):
+def check(data, flag):
     correct= 0
     for i in prange(len(data)):
-        if data[i] == True:
+        if data[i] == flag:
             correct+=1
     return correct
 
@@ -63,12 +75,15 @@ def search(data, model, flag):
     data = combine(data)
     print("Push Through Neural Net")
     net = time.time()
-    result = model.predict(data)
- 
-    print("Create Sample")
-    result = sample_creation(result).numpy()
+    result = model.predict(data, batch_size=5000, use_multiprocessing =True)[2]
     print("Parallel Spectral Clustering")
     cluster = time.time()
     with Pool(39) as p:
         result = p.map(functools.partial(compute_parallel,result, flag), range(num_samples))
-    print(check(result)/len(result))
+    print(check(result, flag)/len(result))
+
+
+def search_model_eval(data, flag):
+    with Pool(39) as p:
+        result = p.map(functools.partial(compute_parallel,data, flag), range(data.shape[0]//6))
+    return check(result)/len(result)

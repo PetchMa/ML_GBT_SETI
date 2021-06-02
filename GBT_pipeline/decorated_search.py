@@ -78,7 +78,7 @@ def classification_data(target_name,cadence, model, out_dir, iterations=6):
         num_samples = data.shape[0]
         cadence_length = data.shape[1]
         data = combine(data)
-        result = model.predict(data)
+        result = model.predict(data, batch_size=5000, use_multiprocessing =True)
         print(result[0].shape)
         result =  sample_creation(result).numpy()
         for n in range(num_samples):

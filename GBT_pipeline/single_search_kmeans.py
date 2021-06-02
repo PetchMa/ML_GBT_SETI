@@ -64,7 +64,7 @@ def search(data, model, flag):
     data = combine(data)
     print("Push Through Neural Net")
     net = time.time()
-    result = model.predict(data)
+    result = model.predict(data, batch_size=5000, use_multiprocessing =True)
  
     print("Create Sample")
     result = sample_creation(result).numpy()

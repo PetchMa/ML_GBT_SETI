@@ -11,7 +11,9 @@ import sys
 sys.path.insert(1, '../ML_Training')
 from decorated_search_multicore import classification_data
 from execute_model import model_load
-
+import os, psutil
+import gc
+process = psutil.Process(os.getpid())
 # variable to control how long the search should be in terms of number of files
 TOTAL_SEARCHES = 10
 
@@ -37,11 +39,13 @@ for col in headers:
     # Change the root directory to get the file
     cadence_set = change(cadence_set, '../../../../../../../')
     # Run the search on the data set 
-    classification_data(str(col), cadence_set, model, "./", iterations=14)
-    print("time: "+str(time.time()-start_begin))
+    classification_data(str(col), cadence_set, model, "./", iterations=4)
     print("time: execution: "+str(time.time()-start))
     print(cadence_set)
     pd.DataFrame(cadence_set).to_csv(str(col)+"_directory.csv")
+    print("data used")
+    print(process.memory_info().rss*1e-9)  # in bytes 
+    gc.collect()
     COUNT+=1
     if COUNT == TOTAL_SEARCHES:
         print("DONE")

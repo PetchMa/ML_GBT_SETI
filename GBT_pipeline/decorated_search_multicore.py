@@ -27,14 +27,10 @@ import functools
 import warnings
 from tqdm import tqdm
 from sklearn.metrics import silhouette_score
+import os, psutil
+import warnings 
+import gc
 
-def sizeof_fmt(num, suffix='B'):
-    ''' by Fred Cirera,  https://stackoverflow.com/a/1094933/1870254, modified'''
-    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
-        if abs(num) < 1024.0:
-            return "%3.1f %s%s" % (num, unit, suffix)
-        num /= 1024.0
-    return "%.1f %s%s" % (num, 'Yi', suffix)
 
 
 def screening(data, labels, index):
@@ -48,6 +44,7 @@ def screening(data, labels, index):
 # Function takes in small distributed chunks of data and runs spectral clustering on the data set
 # returns a list of candidates with the frequency range. 
 def compute_parallel(result, cadence_length,WINDOW_SIZE,index,freq_ranges, n):
+    warnings.filterwarnings("ignore")
     # spectral clustering
     labels = SpectralClustering(n_clusters=2, assign_labels="discretize", 
                 random_state=0).fit_predict( result[n*cadence_length: (n+1)*cadence_length, : ])
@@ -94,6 +91,8 @@ def sample_creation(inputs):
 
 # Classification function
 def classification_data(target_name,cadence, model, out_dir, iterations=6):
+    process = psutil.Process(os.getpid())
+    print(process.memory_info().rss) 
     # Create empty list to store the results
     f_hit_start = []
     f_hit_end = []
@@ -115,34 +114,28 @@ def classification_data(target_name,cadence, model, out_dir, iterations=6):
     print(freq_ranges)
     all_candidates = []
     #execution looop through each of the individual chunks of data
-    for index in range(1):
+    for index in range(iterations):
         print(target_name+ " Iteration: "+str(index)+ " Range: "+str(freq_ranges[index]))
-        # Get the chunk of data via the preprocessing function
-        data = get_data(cadence,start =freq_ranges[index][0],end =freq_ranges[index][1])
-        num_samples = data.shape[0]
-        cadence_length = data.shape[1]
+        print(process.memory_info().rss*1e-9)     
         # Collapse the data without the cadence axis, however keeping the order of the cadences 
-        data = combine(data)
+      
         # Feed through neural network
         net = time.time()
-        result = model.predict(data, batch_size=8000, use_multiprocessing =True)[2]
+        result = model.predict(combine(get_data(cadence, start =freq_ranges[index][0], end =freq_ranges[index][1])), batch_size=8000)[2]
+        num_samples = result.shape[0]//6
+        cadence_length = 6
         print("Push Through Neural Net: "+str(time.time()-net))
-        
+        print(process.memory_info().rss*1e-9) 
         # Run spectral clustering in parallel with one idle core
         cluster = time.time()
-
-        # for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()),
-        #                  key= lambda x: -x[1])[:10]:
-        #     print("{:>30}: {:>8}".format(name, sizeof_fmt(size)))
-
-
         with Pool(39) as p:
             candidates = p.map(functools.partial(compute_parallel, result, cadence_length,WINDOW_SIZE,index, freq_ranges), range(num_samples))
         print("Parallel Spectral Clustering: "+str(time.time()-cluster))
         # Shows the results
-        final_can = [i for i in candidates if i]
-        print(len(final_can))
-        all_candidates.append(final_can)
+        all_candidates.append([i for i in candidates if i])
+        del result
+        del candidates
+        gc.collect()
     final_set = []
     for k in range(len(all_candidates)):
         for el in all_candidates[k]:

@@ -33,35 +33,40 @@ import gc
 
 
 
-def screening(data, labels, index):
-    metric = [0.9,0.9,0.9,0.9,0.9,0.9,0.9,
-              0.9,0.9,0.9,0.9,0.9,0.9,0.9 ]
+def screening(data, labels, snr, index):
+    metric = [0.9,0.9,0.9,0.9]
     fit = silhouette_score(data,labels)
-    if fit < metric[index]:
+    if fit > metric[index]:
+        if snr>1.5:
+            return True
+    else:
+        return False
+        
+def extra_screening(data, labels, snr, index):
+    metric = [0.9,0.9,0.9,0.9]
+    fit = silhouette_score(data,labels)
+    if fit > metric[index]:
+        if snr>1.5:
+            return True, fit
+    else:
         return False, fit
-    return True, fit
 
 # Function takes in small distributed chunks of data and runs spectral clustering on the data set
 # returns a list of candidates with the frequency range. 
-def compute_parallel(result, cadence_length,WINDOW_SIZE,index,freq_ranges, n):
+def compute_parallel(result, cadence_length,WINDOW_SIZE,index,freq_ranges, snr, n):
     warnings.filterwarnings("ignore")
     # spectral clustering
     labels = SpectralClustering(n_clusters=2, assign_labels="discretize", 
                 random_state=0).fit_predict( result[n*cadence_length: (n+1)*cadence_length, : ])
     if strong_cadence_pattern(labels):
-        if screening(result[n*6: (n+1)*6, : ], labels, index)[0]:
-            screen_flag, fit = screening(result[n*6: (n+1)*6, : ], labels, index)
+        if screening(result[n*6: (n+1)*6, : ], labels,snr[n], index):
+            screen_flag, fit = extra_screening(result[n*6: (n+1)*6, : ], labels,snr[n], index)
             # Windowsize is the width of the snipet in terms of Hz
-            hit_start = freq_ranges[index][0] + n*WINDOW_SIZE
-            hit_end = hit_start + WINDOW_SIZE
+            hit_start = freq_ranges[index][1] - (n+1)*WINDOW_SIZE
+            hit_end = freq_ranges[index][1] - (n)*WINDOW_SIZE
             # Computes the frequency start and end of this given window
-            return [hit_start,hit_end, fit]
-    # elif screen_flag:
-    #     # Windowsize is the width of the snipet in terms of Hz
-    #     hit_start = freq_ranges[index][0] + n*WINDOW_SIZE
-    #     hit_end = hit_start + WINDOW_SIZE
-    #     # Computes the frequency start and end of this given window
-    #     return [hit_start,hit_end]
+            return [hit_start, hit_end, fit, snr[n]]
+
 
 # Weakest cadence pattern where anything with a on, and adjacent off pattern is accepted
 def weak_cadence_pattern(labels):
@@ -92,7 +97,6 @@ def sample_creation(inputs):
 # Classification function
 def classification_data(target_name,cadence, model, out_dir, iterations=6):
     process = psutil.Process(os.getpid())
-    print(process.memory_info().rss) 
     # Create empty list to store the results
     f_hit_start = []
     f_hit_end = []
@@ -118,10 +122,11 @@ def classification_data(target_name,cadence, model, out_dir, iterations=6):
         print(target_name+ " Iteration: "+str(index)+ " Range: "+str(freq_ranges[index]))
         print(process.memory_info().rss*1e-9)     
         # Collapse the data without the cadence axis, however keeping the order of the cadences 
-      
+        data, snr = get_data(cadence, start =freq_ranges[index][0], end =freq_ranges[index][1])
+        data = combine(data)
         # Feed through neural network
         net = time.time()
-        result = model.predict(combine(get_data(cadence, start =freq_ranges[index][0], end =freq_ranges[index][1])), batch_size=8000)[2]
+        result = model.predict(data, batch_size=8000)[2]
         num_samples = result.shape[0]//6
         cadence_length = 6
         print("Push Through Neural Net: "+str(time.time()-net))
@@ -129,20 +134,23 @@ def classification_data(target_name,cadence, model, out_dir, iterations=6):
         # Run spectral clustering in parallel with one idle core
         cluster = time.time()
         with Pool(39) as p:
-            candidates = p.map(functools.partial(compute_parallel, result, cadence_length,WINDOW_SIZE,index, freq_ranges), range(num_samples))
+            candidates = p.map(functools.partial(compute_parallel, result, cadence_length,WINDOW_SIZE,index, freq_ranges, snr), 
+                                range(num_samples))
         print("Parallel Spectral Clustering: "+str(time.time()-cluster))
         # Shows the results
         all_candidates.append([i for i in candidates if i])
         del result
         del candidates
+        del data
         gc.collect()
     final_set = []
     for k in range(len(all_candidates)):
         for el in all_candidates[k]:
             final_set.append(el)
     print("Number of Final Candidates "+str(len(final_set)))
-    df = pd.DataFrame(final_set, columns =['start_freq', 'end_freq', 'Confidence'], dtype = float)
+    df = pd.DataFrame(final_set, columns =['start_freq', 'end_freq', 'fit','SNR'], dtype = float)
     df.to_csv(target_name+".csv")
+    return final_set
     
 
 

@@ -49,7 +49,6 @@ def new_cadence(data, snr):
         slope = (true_slope)*(18.25361108/2.7939677238464355)-random()*10
     drift= -1*(1/slope)
     b = 96-true_slope*(start)
-    
     frame = stg.Frame.from_data(df=2.7939677238464355*u.Hz,
                             dt=18.25361108*u.s,
                             fch1=0*u.MHz,
@@ -71,6 +70,29 @@ def create_true(plate,  snr_base=300, snr_range=10, factor=1):
         data[16*el: (el+1)*16,:] = base
     
     while True:
+        snr=(random()*snr_range+snr_base)
+        cadence, m1,b1 =  new_cadence(data, snr)
+        injection_plate, m2, b2=  new_cadence(cadence, snr*factor)
+        if m1!=m2:
+            if intersection(m1,m2,b1,b2):
+                break
+    total[0,:,:] = injection_plate[0:16,:]
+    total[1,:,:] = cadence[16:32,:]
+    total[2,:,:] = injection_plate[32:48,:]
+    total[3,:,:] = cadence[48:64,:]
+    total[4,:,:] = injection_plate[64:80,:]
+    total[5,:,:] = cadence[80:96,:]
+    return total
+
+def create_true_faster(plate,  snr_base=300, snr_range=10, factor=1):
+    index = int(plate.shape[0]*random())
+    total = np.zeros((6,plate.shape[1],plate.shape[2] ))
+    base = plate[index,:,:]
+    data = np.zeros((96,256))
+    for el in range(6):
+        data[16*el: (el+1)*16,:] = base
+    
+    for i in range(1):
         snr=(random()*snr_range+snr_base)
         cadence, m1,b1 =  new_cadence(data, snr)
         injection_plate, m2, b2=  new_cadence(cadence, snr*factor)
@@ -122,14 +144,44 @@ def create_false(plate, snr_base=300, snr_range=10, factor = 1):
         total[4,:,:] = cadence[64:80,:]
         total[5,:,:] = cadence[80:96,:]
     else:
-        mean = np.mean(plate[int(plate.shape[0]*random()), 0:8 ,0:128])
-        std =  np.std(plate[int(plate.shape[0]*random()), 0:8 ,0:128])
-        total = np.random.normal(loc=mean, scale = std, size = (6,plate.shape[1],plate.shape[2] ))
+        total = np.zeros((6,plate.shape[1],plate.shape[2] ))
+        
+        mean = np.mean(plate[int(plate.shape[0]*random()),: ,:])
+        std =  np.std(plate[int(plate.shape[0]*random()), : ,:])
+        # print(mean, std)
+        total[0] = np.random.normal(loc=mean, scale = std, size = (1,plate.shape[1],plate.shape[2] ))
+        
+        mean = np.mean(plate[int(plate.shape[0]*random()),: ,:])
+        std =  np.std(plate[int(plate.shape[0]*random()), : ,:])
+        # print(mean, std)
+        total[1] = np.random.normal(loc=mean, scale = std, size = (1,plate.shape[1],plate.shape[2] ))
+        
+        mean = np.mean(plate[int(plate.shape[0]*random()),: ,:])
+        std =  np.std(plate[int(plate.shape[0]*random()), : ,:])
+        # print(mean, std)
+        total[2] = np.random.normal(loc=mean, scale = std, size = (1,plate.shape[1],plate.shape[2] ))
+        
+        mean = np.mean(plate[int(plate.shape[0]*random()),: ,:])
+        std =  np.std(plate[int(plate.shape[0]*random()), : ,:])
+        # print(mean, std)
+        total[3] = np.random.normal(loc=mean, scale = std, size = (1,plate.shape[1],plate.shape[2] ))
+        
+        mean = np.mean(plate[int(plate.shape[0]*random()),: ,:])
+        std =  np.std(plate[int(plate.shape[0]*random()), : ,:])
+        # print(mean, std)
+        total[4] = np.random.normal(loc=mean, scale = std, size = (1,plate.shape[1],plate.shape[2] ))
+        
+        mean = np.mean(plate[int(plate.shape[0]*random()),: ,:])
+        std =  np.std(plate[int(plate.shape[0]*random()), : ,:])
+        # print(mean, std)
+        total[5] = np.random.normal(loc=mean, scale = std, size = (1,plate.shape[1],plate.shape[2] ))
     return total
 
 
 def create_full_cadence(function, samples, plate, snr_base=300, snr_range=10, factor=1):
     data = np.zeros((samples,6,16,256))
     for i in range(data.shape[0]):
+        # if i%10000==0:
+        #     print(i)
         data[i,:,:,:] = function(plate, snr_base=snr_base, snr_range=snr_range, factor=factor) 
     return data

@@ -14,7 +14,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import sys
 sys.path.insert(1, '../ML_Training')
 from execute_model import model_predict_distribute
-from preprocess import get_data
+from preprocess_dynamic import get_data
 from numba import jit, prange, njit
 from blimpy import Waterfall
 import time
@@ -35,7 +35,7 @@ METRIC = [0.7,0.8,0.9,0.8,
         0.7,0.7,0.7,0.8,
         0.95,0.95,0.9,0.8,
         0.7,0.7,0.8,0.95]
-
+WIDTH_BIN = 2048
 def screening(data, labels, snr, index):
     fit = silhouette_score(data,labels)
     if fit > METRIC[index]:
@@ -115,7 +115,7 @@ def classification_data(target_name,cadence, model, out_dir, iterations=6):
     start = header['fch1']+ header['nchans']*header['foff']
     interval = (end-start)/iterations
     # Compute the window size in MHz
-    WINDOW_SIZE = abs(256*header['foff'])
+    WINDOW_SIZE = abs(WIDTH_BIN*header['foff'])
     # Break down the frequency into chuncks of smaller sizes to processes
     freq_ranges = []
     for i in range(iterations):
@@ -130,6 +130,7 @@ def classification_data(target_name,cadence, model, out_dir, iterations=6):
         print(process.memory_info().rss*1e-9)     
         # Collapse the data without the cadence axis, however keeping the order of the cadences 
         data, snr = get_data(cadence, start =freq_ranges[index][0], end =freq_ranges[index][1])
+        data = resize_par(data, factor=4)
         data = combine(data)
         # Feed through neural network
         net = time.time()

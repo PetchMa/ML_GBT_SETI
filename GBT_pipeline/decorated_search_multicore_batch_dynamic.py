@@ -35,7 +35,7 @@ METRIC = [0.7,0.8,0.9,0.8,
         0.7,0.7,0.7,0.8,
         0.95,0.95,0.9,0.8,
         0.7,0.7,0.8,0.95]
-WIDTH_BIN = 2048
+WIDTH_BIN = 4096
 def screening(data, labels, index):
     fit = silhouette_score(data,labels)
     if fit > METRIC[index]:

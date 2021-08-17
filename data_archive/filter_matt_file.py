@@ -17,7 +17,7 @@ for el in range(len(Lines)):
 total = {}
 for i in range(len(li)//7):
     temp= li[i*7:(i+1)*7]
-    total[temp[0]] = temp[1:6]
+    total[temp[0]] = temp[1:7]
 
 
 df = pd.DataFrame(total)

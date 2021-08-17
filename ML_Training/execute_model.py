@@ -5,7 +5,9 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from keras.models import load_model
 from Sampling import Sampling
-
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
 
 def sample_creation(inputs):
     z_mean = inputs[0]
@@ -17,6 +19,15 @@ def sample_creation(inputs):
 
 def model_load(model_file):
     strategy = tf.distribute.MirroredStrategy(
+        cross_device_ops=tf.distribute.ReductionToOneDevice())
+    # print("Number of devices: {}".format(strategy.num_replicas_in_sync))
+
+    with strategy.scope():
+        model = load_model(model_file, custom_objects={'Sampling': Sampling})
+    return model
+
+def model_load_custom(model_file):
+    strategy = tf.distribute.MirroredStrategy(devices=["/gpu:1", "/gpu:2","/gpu:3"],
         cross_device_ops=tf.distribute.ReductionToOneDevice())
     # print("Number of devices: {}".format(strategy.num_replicas_in_sync))
 

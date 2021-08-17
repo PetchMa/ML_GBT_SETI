@@ -12,23 +12,25 @@ from preprocess_dynamic import resize_par
 tf.get_logger().setLevel('INFO')
 
 NUM_SAMPLES = 1000
-WIDTH_BIN = 2048
+WIDTH_BIN = 4096
 print("Loading in plate")
 
-plate = np.load('../../../../../../../datax/scratch/pma/real_filtered_test_HIP15638.npy')
+plate = np.load('../../../../../../../datax/scratch/pma/real_filtered_LARGE_test_HIP15638.npy')
 print("Load Model")
-model = model_load("VAE-BLPC2-ENCODER_compressed_256v54-2.h5")
+model_name = "VAE-BLPC1-ENCODER_compressed_512v4-5"
+model = model_load(model_name+".h5")
 
 FACTOR = 1
-snr_list = [15, 20,25,30,35,40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135]
-results = []
+snr_range=5
+snr_list = [20,25,30,35,40,45,50, 55,60, 65,70,75]
+results = [] 
 for snr in snr_list:
     print(snr)
     print("Creating False")
-    false_data = abs(create_full_cadence(create_false, plate = plate, samples = NUM_SAMPLES, snr_base=snr, snr_range=5, WIDTH_BIN=WIDTH_BIN))
+    false_data = abs((create_false, plate = plate, samples = NUM_SAMPLES, snr_base=snr, snr_range=snr_range, WIDTH_BIN=WIDTH_BIN))
 
     print("Creating True")
-    true_data = create_full_cadence(create_true, plate = plate, samples = NUM_SAMPLES,  snr_base=snr, snr_range=5, factor =FACTOR, WIDTH_BIN=WIDTH_BIN)
+    true_data = create_full_cadence(create_true, plate = plate, samples = NUM_SAMPLES,  snr_base=snr, snr_range=snr_range, factor =FACTOR, WIDTH_BIN=WIDTH_BIN)
 
     print("Creating Single Shot True")
     true_single_shot = create_full_cadence(create_true_single_shot, plate = plate, samples = NUM_SAMPLES, snr_base=snr, snr_range=5, WIDTH_BIN=WIDTH_BIN)
@@ -45,5 +47,5 @@ for snr in snr_list:
     results.append([snr,false_res,true_res,single_true])
 
 df = pd.DataFrame(results, columns =['SNR', 'False', 'True', 'Single_True'])   
-df.to_csv('full_test.csv')
+df.to_csv(model_name+'_full_test.csv')
 

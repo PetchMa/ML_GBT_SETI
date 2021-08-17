@@ -44,7 +44,7 @@ def intersection(m1,m2,b1,b2):
         return True
 
 def new_cadence(data, snr, WIDTH_BIN = 4096):
-    witdh = random()*25+5
+    
     start = int(random()*WIDTH_BIN//2)+WIDTH_BIN//2
     if (-1)**(int(random()*3+1)) > 0:
         true_slope = (96/start)
@@ -53,6 +53,8 @@ def new_cadence(data, snr, WIDTH_BIN = 4096):
         true_slope = (96/(start-WIDTH_BIN))
         slope = (true_slope)*(18.25361108/2.7939677238464355)-random()*1e-12
     drift = -1*(1/slope)
+    # witdh = random()*25+5
+    witdh = random()*25+abs(drift)*18./1
     b = 96-true_slope*(start)
     frame = stg.Frame.from_data(df=2.7939677238464355*u.Hz,
                             dt=18.25361108*u.s,

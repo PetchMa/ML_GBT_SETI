@@ -109,7 +109,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
+# JOBLIB
+*.joblib
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -124,6 +125,8 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+# models
+ML_Training/*.h5
 
 # Pyre type checker
 .pyre/

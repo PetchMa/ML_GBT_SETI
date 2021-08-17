@@ -14,8 +14,8 @@ from skimage.transform import rescale, resize, downscale_local_mean
 # data preprocessing operations 
 # Goal is to take a full cadence and shape it into something usable 
 # for a wide range of ML pipelines
-WIDTH_BIN = 2048
-FACTOR = 4
+WIDTH_BIN = 4096
+FACTOR = 8
 
 # We get the data for a strict shape of freq 256, and time 16 and we stack them together. 
 # returns the stack of all the slices in order and log normalized and scaled between 1 and 0.
@@ -25,15 +25,12 @@ def get_data(cadence, start, end):
 
     start_pre = time.time()
 
-
+    
     A1 =shaping_data(Waterfall(cadence[0], f_start=start, f_stop=end).data)
     A1 = downscale_local_mean(A1, (1, 1,FACTOR, 1,))
     num_samples = A1.shape[2]//(2048//FACTOR)
     snr = []
     # temp = np.sum(A1, axis=0)
-    for i in range(num_samples):
-          snr.append(np.amax(A1[:,:,i*256:(i+1)*256])/np.mean(A1[:,:,i*256:(i+1)*256]))
-
     B =shaping_data( Waterfall(cadence[1], f_start=start, f_stop=end).data)
     B = downscale_local_mean(B, (1, 1,FACTOR, 1,))
     A2 =shaping_data( Waterfall(cadence[2], f_start=start, f_stop=end).data)

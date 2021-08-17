@@ -1,0 +1,199 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\documentclass{cup-ino}
+\usepackage[utf8]{inputenc}
+\usepackage[latin1]{inputenc}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage[]{algorithm2e}
+\usepackage[table,xcdraw]{xcolor}
+
+\title{Using a $\beta -$Convolutional VAE and Random Forest Decision Trees to Search for Technosignatures through 1359 Targets on Breakthrough Listen's GBT L-band Observations }
+\author{[Peter] Xiangyuan Ma }
+\date{July 2021}
+
+\begin{document}
+
+\maketitle
+
+\section*{Abstract}
+The goal for The Search for Extra-terrestrial Intelligence (SETI) is to find 
+evidence of technological signals beyond Earth. Radio frequency SETI searches are often conducted in environments characterized by a high volume of interference and a vast quantity of unlabeled data. The main problem in Radio SETI is developing a generalized technique in rejecting human radio frequency interference (RFI) and help narrow the searches for technosignatures. In this paper, we present a $\beta -$Convolutional Variational Autoencoder with an embedded discriminator combined with Random Forest Decision Trees to help classify between RFI and SETI candidates in a semi-unsupervised fashion. We develop and evaluate the performance of this algorithm on a sets of synthetic SETI events created with the data collected from the Breakthrough Listen project at the Green Bank telescope. Finally this approach is executed on the real GBT L-band dataset of over $1359$ observational targets.  
+\section{Introduction}
+\subsection{Overview}
+The first initial attempt at conducting a SETI search was done in 1959  and the first modern technosignature search was conducted shortly afterwards where $400 $kHz of bandwidth was searched from the observation of 2 stars. These types of searches has since expanded in the number of stars searched, to the frequency ranges searched and more. Recently in 2015, Breakthrough Listen \footnote{http://seti.berkeley.edu/listen/} \footnote{https://breakthroughinitiatives.org/}  has conducted the most comprehensive SETI search to date. This project aims to use the Green Bank Telescope (GBT) and the Parkes Telescope to search through thousands of stars and hundreds of galaxies for across multiple bands for these technosignatures. \\
+
+The main objective of Radio frequency SETI is to search for signals that are of artificial origins that are not of human made sources. These signals have a specific characteristic being of which they are narrow band in nature (on the order of Hz) and are Doppler drifted. In order to rejected human RFI researchers employ a temporal filtering technique by sequentially observing a primary target but inter-splicing the observation by observing other nearby stars. If the source of the signal were to be human made, then the signal would appear on multiple adjacent observations. A SETI signal should only appear in the primary targets but not in any other targets. This sequence of observation for a given primary target is called a cadence.\\
+
+
+Algorithms currently in production, such as TurboSETI, are designed to detected these class of signals and they employ the current filtering technique. However, there can be a near infinite range of possible signal morphology that may be of interest to researchers that might not be captured via traditional computational approaches. The promise of modern deep learning techniques in its ability to generalize relationships in big data sets which has been the major exploits of this new class of algorithms. The rise in popularity of disentangled learning is it's ability to learn interpertable features from training data. The ability for a model to implicitly learn "cadence filtering" and "narrowband Doppler drifting signals" allows researchers search through a wider range of potential signals. In this work we apply techniques from recent advances in
+disentangled deep learning to search through GBT L-Band data.
+
+
+\subsection{Problem Statement}
+The main problem in radio SETI is the volume of human RFI present in the environment. These sources range from satellites, to phones to telecommunication networks or WiFi. However we cannot simply rejected these signals since they exhibit the same characteristics as a potential SETI candidate. Thus we apply a cadence filtering technique. As described previously, a telescope observes the primary target for 5 minutes, then the telescope points to another near by target for another 5 minute observation, then the telescope points back and re-observes the primary target for an additional 5 minutes. This process continues until there are 6 total observations. \\
+
+There are three main metrics in which we wish to evaluate the performance of the novel algorithm. 
+Note these evaluations will be conducted on synthetic data generated with GBT data.
+\begin{enumerate}
+    \item {The algorithm's ability to find signals of a wide range of morphology's}
+    \item{ The algorithm's ability reject false positive signals (RIF)}
+    \item{The algorithm's runtime and overall efficiency }
+\end{enumerate}
+\\
+After evaluating its performance on synthetic data, we will then run a full scale SETI search on existing GBT L-band data which contains 1327 primary targets each with a corresponding cadence. The results of which will be discussed further in the paper.
+
+\section{Related Work}
+Current Disentangled learning models such as the $\beta -$ Variational Autoencoder has shown that neural networks can learn interpretable features from images. For example a dataset containing a picture of a circle transformed  via rotation, reflection and translation, this kind of neural network was able to learn these three parameters in the latent feature space such that by perturbing one axis of the latent space it results in interpretable changes in the output of the decoder, such as rotating, translating or reflecting the object. This interpretability is in part due to the continuous sampling space of these Variational Autoencoders. This is inherently a unsupervised learning approach. \\ 
+
+Another classical algorithm that 
+
+\section{Methods}
+
+\section{Event Generations}
+Before we begin discussions on the evaluation of the performance of the algorithm we must develop a robust and representative test for the algorithm to begin with. The synthetic SETI events are created by a program called SETIGEN. We construct three main components, plate, cadence, injection. \\ \\
+
+Firstly our synthetic data requires existing observations to fill the empty space. Specifically want want to use observations known to be filled with RFI as the background. Thus for tests we sample some given target on the frequency range between $1418.70117$MHz to $1587.89062$MHz where there is known RFI candidates. \\\\
+
+Then we take that target's corresponding cadence of 6 observations and inject an RFI signal that drifts across all the observations using SETIGEN. This we call a 
+cadence layer. \\\\
+
+Then we want to inject the SETI signal, however when we inject these random signals we want to make sure none of the signals intersect each other in a cadence and remains in the same spectrogram through the 30 minute observation. This is to make sure the machine learning model can "see" all the signals in the sequence and that no signals overlap and don't appear as different signals. The end product 
+are observations as such in figure [4]. 
+
+\subsection{Training Dataset Generation}
+The training set will consist of two categories, one category contains GBT observations with SETI signals and the second category will contain full cadences of both true and false SETI events. The first category of training data is created from taking observations of targets ${HIP110750}$, $HIP13402$, $HIP8497$ on a frequency range of $1418.70117$MHz to $1587.89062$MHz and injecting signals in each. This first set is meant for training the $\beta-$ Convolutional VAE. A visual example of such can be seen in figure [1]. 
+
+\begin{figure}[h]
+\includegraphics[scale=0.3]{seti_false.JPG}
+\centering
+\caption{This is the RFI the model is learned to detect}
+\end{figure}
+
+The second training set is meant to train the encoder on differentiating true SETI Cadences and RFI. We take the same observations on ${HIP110750}$, $HIP13402$, $HIP8497$ along with its respective cadences and construct SETI and RFI events. This is meant to train the encoder with a new discriminator function. A visual example of such a cadence is shown in figure [2].
+
+\begin{figure}[h]
+\includegraphics[scale=0.3]{seti_true.JPG}
+\centering
+\caption{This figure shows an example of the data feed into the neural network that contains a fully cadence. }
+\end{figure}
+
+\\
+The test dataset is created in the same way except the observation comes from a new target ${HIP13402}$ in order to ensure the robustness of the algorithm in its ability to generalize to its performance. In total the dataset is $60,000$ Training category 1, and $120,000$ for category 2 training set where the validation set is $20\%$. For the test it is $6,000$ Training category 1, and $12,000$ for category 2 training set.\\
+
+However, due to the way the training set is constructed, there are bounds for the signal characteristics. The model will only be trained on signals that have a maximal drift rate range of $\pm 8.6$ Hz/s and with a range of signal width of $5-35$Hz. Furthermore, the model works by taking small window sample from the entire observation. This window sample is approximately $12100$Hz wide with a resolution of $2.97$Hz per frequency bin.\\
+
+\\
+\subsection{Data Preprocessing}
+Since the data is irregularly shaped in respect to the inputs of a typical convolutional neural network, we apply a down sampling by a factor of 8 on the original window snippet resulting in a data shape of $[num_samples, 16,512,1]$. \\
+
+Furthermore, since the data set is recorded in arbitrary scaled units, the maximal values can hit orders of $10^11$, thus we need to normalize the data yet allow the model to pick up signals that are orders of magnitude weaker. To do so, we $\log$ normalize the data first. \\
+
+Afterwards we can then shift the values in the data set down such that the minimum is at 0. Finally we can scale down the entire dataset down between $0,1$. This is important since our model employs a sigmoid activation and a binary crossentropy loss function. 
+
+\subsection{Approach}
+We first adopted a classical approach in designing a $\beta-$ Convolutional Variational Autoencoder. We first stacked layers of convolutional layers to extract "spatial" features from the spectrogram and then we feed the data through a traditional fully connected neural network. Then the model splits off into two layers, one being the mean $\mu$ and the other being the layer 
+$\sigma$ being the log of the deviation. Then the two are fed into a sampling layer. This part is a standard encoder model. 
+From there the model attempts to recreate the original spectrogram by performing the reverse of what the model just did this is called the decoder. Architecture wise it is identical to the encoder except in reverse. The factor of $\beta$ is a hyperparameter in the loss function and it affects how much the model is penalized for how the model constructs the sample layer. This hyper parameter helps force the model to learn disentangled feautres in the latent space. \\
+
+Despite the model's ability to learn these features we want to also force the model to exlcusively focus on the cadence filtering technique discussed earlier. Thus we will incoorporate an extra loss function that helps discriminate between SETI events and non-SETI events. This will be referred to later discussion as the cross divergence. \\
+
+Finally after training that model, the encoder is extracted to help encode the features of these observations and then sequentially they are then fed into a random forest decision tree classifier. \\
+\begin{figure}[h]
+\includegraphics[scale=0.4]{model.JPG}
+\centering
+\caption{This figure shows the final design of the model }
+\end{figure}
+\subsection{Implementation Details}
+
+Our model consists of 3x3 convolutional filters with a total of 8 convolutional layers with filter sizes of [16,32,64]. The decoder is symmetrical to the encoder. The latent space had a dense layer of 512 parameters and the latent vector is 8 dimensional in shape. The final model design is shown in figure [3] \\
+
+The training of the Variational Autoencoder is already well know, however a classical loss function is defined as the following equation [1]. Notice the disentanglement factor $\beta$ which helps weigh the numerical significance in computing a value that is "different" between the sampling layers described by the KL Divergence loss function. 
+\begin{equation}
+
+\mathcal{F}(\theta,\phi,\beta; x,z) = \overbrace{\mathbb{E}_{q_\phi(z|x)}[\log p_\theta(x|z)]}^{\text{Binary Crossentropy}} + 
+\overbrace{\beta (D_{KL}(q_\phi(z|x)||p(z))-\epsilon))}^{KL Divergence}
+\centering
+
+\end{equation}
+However, we also want to add make the model cluster a cadence and we wish to train the model such that the encoder outputs are useful. In order to achieve such a result we incorporate a clustering loss which we will denote as $\Lambda$. There are two specific types of losses, a cross similarity and a cross divergence loss, we define as $\Lambda_S$ and $\Lambda_D(z,z')$. We define these functions as the following where $z$ is the encoding of the primary target, and we define that $z'$ as the encoding of the off target.
+
+\begin{equation}
+\Lambda_S(z,z')= \frac{1}{n}\sum_{i=0}^{n}||z_i-{z_i}'||^2
+\end{equation}
+It is important to note that this operation needs to repeated 15 times to cover all permutations of pairings. In the case of a False SETI candidate. The reasoning being that the "RFI" features should be "similar" to each other. \\
+
+Next, we can then define the divergence as the following equation [3]. 
+
+\begin{equation}
+\Lambda_D(z,z') = \frac{1}{\Lambda_S(z,z')}
+\end{equation}
+We chose this function because the smaller the value the greater the distance between the two vectors. For true SETI candidates we would try to seperate the A cadences from the rest of the B,C,D observations but at the sametime make sure all the BCD are the same and the A's are all the same. Thus the permutation of losses will be pairing all the A's with $\Lambda_S(z,z')$ and all the BCD's with $\Lambda_S(z,z')$ but all the permutations of A's with B,C,D's will be computed via $\Lambda_D(z,z')$ the cross divergence function. In general we have: \\
+
+\begin{equation}
+\begin{align}
+\mathcal{F}(\theta,\phi,\beta; x,z,z') &= \overbrace{\mathbb{E}_{q_\phi(z|x)}[\log p_\theta(x|z)]}^{\text{Binary Crossentropy}} \\
+&+ \underbrace{\overbrace{\beta (D_{KL}(q_\phi(z|x)||p(z))-\epsilon))}^{\text{KL Divergence }} + 
+\overbrace{\Lambda_S(z,z')}^{\text{cross similarity}} + \overbrace{\Lambda_{D}(z,z')}^{\text{cross divergence}}}_{\text{disentanglement term}}
+\end{align}
+\end{equation}
+
+\subsection{Training Model}
+We execute a standard training loop as before, however the neural network would be trained on two different datasets in order to compute the clustering loss. \\
+
+\begin{algorithm}[H]
+ \For{each epoch}{
+  \For{each batch}{
+        1 - Feed first dataset into neural network \\
+        2- Compute the Pixel wise reconstruction loss \\
+        3 - Compute the KL Divergence Loss\\
+        4 -Feed second dataset into the encoder \\
+        5 - Compute the Cross similarity and divergence loss
+    }
+ }
+ 6 - Train Random Decision Forest 
+ \caption{Training Algorithm Pseudo Code }
+\end{algorithm}https://www.overleaf.com/project/60f860fe51608414ba898430
+The gradients are then updated through this sequence of computations. 
+
+
+
+\section*{Test}
+After the synthetic data is loaded the algorithm is ran through tests to determine its false positive rates. The test comprises of various $SNR$ ranges from $20-70$ since only SETI signals of SNR $20$ and greater are accepted. $50\%$ of the false data contains an injected RFI and real RFI taken from GBT data, while the other half contains a the original GBT observation. The SETI signal would only be present in true signals. These true signals also include injected RFI and real GBT RFI. The results are shown here. Each entry was tested with over $1000$ cadences each and a total of $12,000$ cadences. 
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{||c c c c||} 
+ \hline
+ SNR & False Acc. & True Acc. & True Single\\ [0.5ex] 
+ \hline\hline
+
+20& 0.947& 0.928&0.921\\
+25& 0.955&0.949&0.949\\
+30& 0.965&0.962&0.962\\
+35& 0.96&0.974&0.955\\
+40& 0.972&0.976&0.964\\
+45& 0.96&0.982&0.965\\
+50& 0.963&0.982&0.976\\
+55& 0.957&0.98&0.971\\
+60& 0.96&0.983&0.982\\
+65& 0.968&0.991&0.984\\
+70& 0.957&0.986&0.971\\
+75& 0.955&0.987&0.978  \\  
+ \hline
+\end{tabular}
+\caption{Accuracy at SNR  10-20}
+\label{table:1}
+\end{table}
+
+These results show that the model has a high accuracy in picking up SETI signals however, it appears that the pipeline has an intrinsic $5\%$ false positive rate that remains unchanged throughout the  tests regardless of the $SNR$ of the injected signal.This indicates that there exists an inherent issue within the pipeline.\\
+
+\\
+One means of camp
+
+\section*{Pipeline Architecture}
+The pipeline follows the following schematic in the flow of the data shown in the figure below. Firstly the cadence is directory is located via the Breakthrough Listen API which hands back a query of all the L-band 3Hz resolution GBT datasets. Each primary target contains a full cadence of observations. This cadence is then parsed and searched independently. \\
+\\
+Given each cadence, there are a total of $322961408$ frequency bins. This allow us to evenly divide the workload into \(7,8,11,14,16\) sections each computed iteratively on the band. This 
+\end{document}

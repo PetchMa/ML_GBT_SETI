@@ -9,9 +9,12 @@ import pandas  as pd
 import time 
 import sys
 sys.path.insert(1, '../ML_Training')
-from decorated_search_multicore import classification_data
+from decorated_search_multicore_batch import classification_data
 from execute_model import model_load
-
+import os, psutil
+import gc
+from intro import intro
+process = psutil.Process(os.getpid())
 # variable to control how long the search should be in terms of number of files
 TOTAL_SEARCHES = 10
 
@@ -21,7 +24,7 @@ def change(cadence, leading):
         cadence[i] = leading+str(cadence[i])
         print(cadence[i])
     return cadence
-
+intro(TOTAL_SEARCHES)
 # read the file for list of cadences
 df = pd.read_csv('../data_archive/L_band_directory.csv')
 headers = list(df.columns.values[2:])
@@ -30,18 +33,23 @@ start_begin =  time.time()
 # Load the model into memory
 model = model_load("../test_bench/VAE-ENCODERv27.h5")
 COUNT = 0
-for col in headers:
+print("Total Number of Files: "+str(len(headers)))
+for i in range(30, len(headers)):
+    col = headers[i]
     start = time.time()
     # create a list of cadence directories
     cadence_set = list(df[col].values)
+    print(cadence_set)
     # Change the root directory to get the file
     cadence_set = change(cadence_set, '../../../../../../../')
     # Run the search on the data set 
-    classification_data(str(col), cadence_set, model, "./", iterations=14)
-    print("time: "+str(time.time()-start_begin))
+    result = classification_data(str(col), cadence_set, model, "result/", iterations=16)
     print("time: execution: "+str(time.time()-start))
-    print(cadence_set)
-    pd.DataFrame(cadence_set).to_csv(str(col)+"_directory.csv")
+    
+    pd.DataFrame(cadence_set).to_csv("result/"+str(col)+"_directory.csv")
+    print("Memory used")
+    print(process.memory_info().rss*1e-9)  # in bytes 
+    gc.collect()
     COUNT+=1
     if COUNT == TOTAL_SEARCHES:
         print("DONE")

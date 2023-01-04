@@ -2,12 +2,14 @@
 This is the development repository for the search algorithm using semi-unsupervised technique for Summer Research @UC Berkeley SETI.
 ***Please note that the repository alone is messy, please follow the menu directory in this readme to browse the code base.*** 
 
-# Original Datasets
+# Original Background Datasets
 The original training dataset is described in our paper. Specific links to download the dataset are the following for TRAINING:
 [HIP110750](http://seti.berkeley.edu/opendata/?onLoad=1&target=HIP110750&telescopes=["gbt"]&fileTypes=["hdf5"]&dataTypes=["fine"])
 [HIP13402](http://seti.berkeley.edu/opendata/?onLoad=1&target=HIP13402&telescopes=["gbt"]&fileTypes=["hdf5"]&dataTypes=["fine"])
 [HIP8497](http://seti.berkeley.edu/opendata/?onLoad=1&target=HIP8497&telescopes=["gbt"]&fileTypes=["hdf5"]&dataTypes=["fine"])
 *Note: HIP13402 appears in both the training set AND in the top 8 candidates. However this does NOT mean that we tested or validated on trained data, there are multiple observations of HIP13402 conducted at different times. Thus is not an issue.* 
+
+For the testing and in general for ANY dataset we use it can be found at the open data archive found [here](http://seti.berkeley.edu/opendata)
 
 Preprocessing methods were described in the paper.
 
@@ -34,3 +36,4 @@ Here is the search list containing all the targets [here](https://github.com/Pet
 
 # Visualisation
 The visualisation notebook is too large to be place in a github repository. It simply provides the plots visualised in the paper and does not include any scientific novelty. 
+

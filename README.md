@@ -1,6 +1,6 @@
 # ML GBT SETI Project : [Must Read]
 This is the development repository for the search algorithm using semi-unsupervised technique for Summer Research @UC Berkeley SETI.
-***Please note that the repository alone is messy, please follow the menu directory in this readme to browse the code base.***  This is the evolution of [Deep SETI](https://github.com/PetchMa/DeepSeti)
+***Please note that the repository alone is messy, please follow the menu directory in this readme to browse the code base.***  This is project used to be [Deep SETI](https://github.com/PetchMa/DeepSeti) but has since matured to a fully usable algorithm.
 
 
 # Original Background Datasets
@@ -28,6 +28,8 @@ To get the trained weights it is located in this repository as well [here](https
 
 # Random Forest Model
 We train the random forest in the following script [here](https://github.com/PetchMa/ML_GBT_SETI/blob/4096_pipeline/test_bench/test_real_full_dynamic_forest.py)
+Weights were not saved in the github repository as the size was far to large to fit. 
+Reproduce this model using the script mentioned above.
 
 # Benchmarking Model
 We benchmarked the results in the following notebook [here](https://github.com/PetchMa/ML_GBT_SETI/blob/4096_pipeline/test_bench/Benchmark_paper_final.ipynb)

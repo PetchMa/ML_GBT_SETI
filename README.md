@@ -1,6 +1,7 @@
-# ML GBT SETI Project
+# ML GBT SETI Project : [Must Read]
 This is the development repository for the search algorithm using semi-unsupervised technique for Summer Research @UC Berkeley SETI.
-***Please note that the repository alone is messy, please follow the menu directory in this readme to browse the code base.*** 
+***Please note that the repository alone is messy, please follow the menu directory in this readme to browse the code base.***  This is the evolution of [Deep SETI](https://github.com/PetchMa/DeepSeti)
+
 
 # Original Background Datasets
 The original training dataset is described in our paper. Specific links to download the dataset are the following for TRAINING:

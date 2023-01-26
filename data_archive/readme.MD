@@ -6,7 +6,7 @@ We created a short schematic to depict the data structure as its saved
 
 ![schematic](https://raw.githubusercontent.com/PetchMa/ML_GBT_SETI/4096_pipeline/data_archive/top_8_cand_struct.jpeg)
 
-Simply put, this is a nested dictionary, such that its keys are the `mlc<x>` for each of the 8. The value of each key is a dictionary so for each candidate it contains `data` , `frequency`  and `all_headers` as the keys. Below is python code to open and plot the data. 
+Simply put, this is a nested dictionary, such that its keys are the `mlc<x>` for each of the 8. The value of each key is a dictionary so for each candidate it contains `data` , `frequency`  and `all_headers` as the keys. Below is python code to open and plot the data of one of the 8 candidates. Note following packages needs `blimpy` which can be sourced [here]([https://github.com/PetchMa/ML_GBT_SETI/blob/4096_pipeline/data_archive/top_8_data.pkl](https://github.com/UCBerkeleySETI/blimpy)) 
 
 ```python 
 import pickle

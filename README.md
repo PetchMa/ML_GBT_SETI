@@ -37,6 +37,12 @@ We benchmarked the results in the following notebook [here](https://github.com/P
 # Search Targets
 Here is the search list containing all the targets [here](https://github.com/PetchMa/ML_GBT_SETI/blob/4096_pipeline/data_archive/L_band_directory.csv)
 
+# Top Candidates Data
+Here is the top 8 candidates and their original data [here](https://github.com/PetchMa/ML_GBT_SETI/blob/4096_pipeline/data_archive/readme.MD)
+
+
 # Visualisation
 The visualisation notebook is too large to be place in a github repository. It simply provides the plots visualised in the paper and does not include any scientific novelty. 
+
+
 

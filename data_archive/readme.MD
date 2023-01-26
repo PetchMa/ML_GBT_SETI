@@ -22,12 +22,13 @@ def plot_cadence(data):
     fig, ax = plt.subplots(6, 1, figsize=(10,10))
     fig.subplots_adjust(hspace = .05, wspace=.001)
     for i in range(6):
-        ax[i].imshow(data[i, :, 0, :], aspect=20, vmin = data.min(), vmax = data.max())
+    # note we need to reverse frequency axis to create the plots in the paper!
+        ax[i].imshow(data[i, :, 0, ::-1], aspect=30, vmin = data.min(), vmax = data.max())
         if i==5:
             ax[i].set_xlabel('Frequency bins', fontsize=20)
     fig.text(0.06, 0.5, 'Time bins', ha='center', va='center', rotation='vertical',  fontsize=16)
     plt.show()
     
     
-plot_cadence(data['mlc8']['data'])    
+plot_cadence(data['mlc8']['data'])   
 ```

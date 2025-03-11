@@ -16,7 +16,7 @@ Preprocessing methods were described in the paper.
 
 # Simulation Code
 
-**Bug on Driftrate Slopes:** [Tues March 2025] @barbaracabrales found that the slope direction was calculated via `random` which was exclusive of the last integer and thus biased the simulation towards negative slopes by factor of 2. For future references please use `uniform` instead. 
+**Bug on Driftrate Slopes:** [Tues March 2025]  [@barbaracabrales](https://github.com/barbaracabrales) found that the slope direction was calculated via `random` which was exclusive of the last integer and thus biased the simulation towards negative slopes by factor of 2. For future references please use `uniform` instead. 
 
 Please find the simulation code in scripts [here](https://github.com/PetchMa/ML_GBT_SETI/blob/4096_pipeline/test_bench/synthetic_real_dynamic.py)
 
